@@ -114,13 +114,28 @@ def mean2_test(mean1, mean2, s1, s2, n1, n2, delta=0, H0=None, variance="known",
         c_value = distribution.ppf(alpha)
         p_value = distribution.cdf(statistic)
     elif H0 == "equal":
-        c_value = distribution.ppf(1-alpha/2)
+        c_value = (distribution.ppf(alpha/2), distribution.ppf(1-alpha/2))
         p_value = 2 * min(1 - distribution.cdf(statistic), distribution.cdf(statistic))
     if not CI:
         return statistic, c_value, p_value
     else:
         diff = distribution.ppf(1-alpha/2)*denominator
-        return nominator - diff, nominator + diff
+        return mean1 - mean2 - diff, mean1 - mean2 + diff
+
+    def residue_plot(self):
+        e = [self.y[i] - self.predict(self.x[i]) for i in range(self.n)]
+        fig=plot.figure(num=1, figsize=(15, 8),dpi=80)
+        plot.scatter(self.x,e)
+        plot.show()
+
+def get_mean_variance(X):
+    '''
+    RETURN: mean, s, n
+    '''
+    n = len(X)
+    mean = sum(X) / n
+    s = (sum([(k-mean)**2 for k in X]) / (n-1))**0.5
+    return mean, s, n
 
 
 
@@ -135,8 +150,16 @@ def mean2_test(mean1, mean2, s1, s2, n1, n2, delta=0, H0=None, variance="known",
 # 21.4
 # print(mean2_test(24.6, 22.1, 0.85, 0.98, 12, 15, variance="unknown_equal", sample_size="small", CI=True))
 # 21.6
-print(mean2_test(0.9375, 0.9173, 0.0389, 0.0402, 8, 8, delta=0, H0="less", variance="unknown_equal", sample_size="small"))
+# print(mean2_test(0.9375, 0.9173, 0.0389, 0.0402, 8, 8, delta=0, H0="less", variance="unknown_equal", sample_size="small"))
 
+
+# X = [75, 46, 57, 43, 58, 38, 61, 56, 64, 65]
+# Y = [52, 41, 43, 47, 32, 49, 52, 44, 57, 60]
+# print(get_mean_variance(X))
+# print(get_mean_variance(Y))
+# print(mean2_test(56.3, 47.7, 11.20, 8.19, 10, 10, 0, H0="equal", variance="unknown", sample_size="small"))
+
+print(mean2_test(121, 112, 8, 8, 10, 10, 0, H0="less", variance="known"))
 
 '''
 to do:

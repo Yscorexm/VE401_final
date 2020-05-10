@@ -32,13 +32,13 @@ def mean_test(mean, s, n, delta=0, H0=None, variance="known", CI=False, alpha=0.
         c_value = distribution.ppf(alpha)
         p_value = distribution.cdf(statistic)
     elif H0 == "equal":
-        c_value = distribution.ppf(1-alpha/2)
+        c_value = (distribution.ppf(alpha/2), distribution.ppf(1-alpha/2))
         p_value = 2 * min(1 - distribution.cdf(statistic), distribution.cdf(statistic))
     if not CI:
         return statistic, c_value, p_value
     else:
         diff = distribution.ppf(1-alpha/2)*denominator
-        return nominator - diff, nominator + diff
+        return mean - diff, mean + diff
 
 
 def chi2_test(s, n, sigma_0=0, H0=None, CI=False, alpha=0.05):
@@ -67,7 +67,7 @@ def chi2_test(s, n, sigma_0=0, H0=None, CI=False, alpha=0.05):
     if not CI:
         return X2, c_value, p_value
     else:
-        return distribution.ppf(alpha/2)*sigma_0**2/(n-1), X2 + distribution.ppf(1-alpha/2)*sigma_0**2/(n-1)
+        return (n-1)*s**2/distribution.ppf(1-alpha/2), (n-1)*s**2/distribution.ppf(alpha/2)
     
 
 
@@ -108,7 +108,8 @@ def wsr_test(X, H0):
     if n < 10:
         print("Sample size too small for normal approximation.")
     r = stats.rankdata(np.abs(d))
-    # print(r)
+    print(d)
+    print(r)
     w_plus = np.sum((d > 0) * r, axis=0)
     w_minus = np.sum((d < 0) * r, axis=0)
     E_w = n*(n+1)/4
@@ -121,15 +122,15 @@ def wsr_test(X, H0):
         Var_w -= (repnum * (repnum * repnum - 1)).sum()/48
     
     if H0 == "less":
-        Z = (w_minus - E_w) / Var_w**0.5
+        Z = (abs(w_minus) - E_w) / Var_w**0.5
         p_value = stats.norm.cdf(Z)
     elif H0 == "greater":
-        Z = (w_minus - E_w) / Var_w**0.5
+        Z = (w_plus - E_w) / Var_w**0.5
         p_value = stats.norm.cdf(Z)
     elif H0 == "equal":
-        Z = (min(w_minus, w_plus) - E_w) / Var_w**0.5
+        Z = (min(abs(w_minus), w_plus) - E_w) / Var_w**0.5
         p_value = 2 * stats.norm.cdf(Z)
-    return (E_w, Var_w), (-w_minus, w_plus), p_value
+    return (E_w, Var_w), (-w_minus, w_plus), (Z, p_value)
 
 
 
@@ -158,9 +159,10 @@ def proportion2_test(p, n, p0, H0, alpha=0.05):
 
 # 14.4 
 # print(mean_test(41.25, 2, 25, 40, H0="equal", variance="known"))
+# print(mean_test(0.2546, 0.0001, 10, 0.255, H0="equal"))
 
 # 17.4
-print(chi2_test(1.41, 20, 1.5, H0="greater"))
+# print(chi2_test(1.41, 20, 1.5, H0="greater"))
 
 # 18.3 18.5
 # X = [5, 1, 5, 4, 4, 6, 6,

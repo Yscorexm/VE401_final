@@ -70,6 +70,7 @@ class SLR:
         t = stats.t(self.n - 2).ppf(1-alpha/2)
         mean = self.predict(x_0)
         diff = t * self.S * (1/self.n + (x_0 - self.x_mean)**2/self.Sxx)**0.5
+        print(mean, diff)
         return mean-diff, mean+diff
     
     def PI(self, x_0, alpha=0.05):
@@ -83,6 +84,7 @@ class SLR:
         t = stats.t(self.n - 2).ppf(1-alpha/2)
         mean = self.predict(x_0)
         diff = t * self.S * (1 + 1/self.n + (x_0 - self.x_mean)**2/self.Sxx)**0.5
+        print(mean, diff)
         return mean-diff, mean+diff
     
     def correlation_test(self, alpha=0.05):
@@ -104,10 +106,11 @@ def LoF_test(N, X, Y, alpha=0.05):
     H0: the linear regression model is appropriate.  
     In slides 608.  
     REQUIRE: multiple sampling for single x. N, X are 1-D lists. Y is a 2-D list.  
-    RETURN: Test statistics and critical value.
+    RETURN: (SSE, SSE_pe, SSE_if), (Test statistics and critical value).
     '''
     k = len(N)
     n = sum(N)
+    print(n, k)
     mean_Y = [sum(Y[i])/N[i] for i in range(k)]
     SSE_pe = sum(sum([(Y[i][j] - mean_Y[i])**2 for j in range(N[i])]) for i in range(k))
     x = []
@@ -121,7 +124,7 @@ def LoF_test(N, X, Y, alpha=0.05):
     SSE_if = SSE - SSE_pe
     F = (SSE_if / (k - 2)) / (SSE_pe / (n - k))
     f = stats.f(k - 2, n - k).ppf(1-alpha)
-    return F, f
+    return (SSE, SSE_pe, SSE_if), (F, f)
 
 
 
@@ -141,10 +144,22 @@ def LoF_test(N, X, Y, alpha=0.05):
 # print(model.significance_test())
 
 # 25.4
-N = [3, 3, 3, 3, 3]
-X = [30, 40, 50, 60, 70]
-Y = [[13.7, 14.0, 14.6], [15.5, 16.0, 17.0], [18.5, 20.0, 21.1], [17.7, 18.1, 18.5], [15.0, 15.6, 16.5]]
-print(LoF_test(N, X, Y))
+# N = [3, 3, 3, 3, 3]
+# X = [30, 40, 50, 60, 70]
+# Y = [[13.7, 14.0, 14.6], [15.5, 16.0, 17.0], [18.5, 20.0, 21.1], [17.7, 18.1, 18.5], [15.0, 15.6, 16.5]]
+# print(LoF_test(N, X, Y))
+
+# N = [2, 2, 3, 3, 2, 2]
+# X = [1.0, 3.3, 4.0, 5.6, 6.0, 6.5]
+# Y = [[1.6, 1.8], [1.8, 2.7], [2.6, 2.6, 2.2], [3.5, 2.8, 2.1], [3.4, 3.2], [3.4, 3.9]]
+# print(LoF_test(N, X, Y))
+
+X = [100, 120, 140, 160, 180]
+Y = [45, 54, 66, 74, 85]
+model = SLR(5, X, Y)
+print(model.CI(130))
+print(model.PI(130))
+
 
 '''
 to do: 

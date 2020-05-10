@@ -58,11 +58,29 @@ class MLR:
         RETURN: CI.
         '''
         t = stats.t(self.n-self.p-1).ppf(1-alpha/2)
+        # print(t)
         x_0 = np.array([1] + x)
         u_Y_x_0 = x_0.T @ self.b
         diff = t * self.S * (x_0.T @ np.linalg.inv(self.X.T @ self.X) @ x_0)**0.5
+        print(u_Y_x_0, diff)
         return u_Y_x_0 - diff, u_Y_x_0 + diff
     
+    def PI(self, x, alpha=0.05):
+        '''
+        Prediction Intervals for the Estimated Mean.  
+        In slides 671.  
+        REQUIRE: x is a list without the first element 1.  
+        RETURN: PI.
+        '''
+        t = stats.t(self.n-self.p-1).ppf(1-alpha/2)
+        # print(t)
+        x_0 = np.array([1] + x)
+        u_Y_x_0 = x_0.T @ self.b
+        diff = t * self.S * (1 + x_0.T @ np.linalg.inv(self.X.T @ self.X) @ x_0)**0.5
+        print(u_Y_x_0, diff)
+        return u_Y_x_0 - diff, u_Y_x_0 + diff
+    
+
     def TMS_test(self, j, alpha=0.05):
         '''
         T-Test for Model Sufficiency.  
@@ -89,6 +107,7 @@ def FMS_test(full, reduced, alpha=0.05):
     REQUIRE: full and reduced is of MLR class.  
     RETURN: Test statistics and critical value.  
     '''
+    # print(full.SSE, reduced.SSE)
     F = (full.n - full.p - 1)/ (full.p - reduced.p) * (reduced.SSE - full.SSE)/full.SSE
     f = stats.f(full.p - reduced.p, full.n - full.p - 1).ppf(1-alpha)
     return F, f
@@ -117,4 +136,4 @@ def FMS_test(full, reduced, alpha=0.05):
 # model = MLR(len(x), 2, [x, x_square], y)
 # reduced_model = MLR(len(x), 1, [x], y)
 # print(model.TMS_test(0))
-print(FMS_test(model, reduced_model))
+# print(FMS_test(model, reduced_model))

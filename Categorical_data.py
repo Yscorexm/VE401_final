@@ -27,13 +27,16 @@ def indepence_test(a, alpha=0.05):
     '''
     r, c = a.shape
     n = np.sum(a)
+    # print(n)
     n0 = np.sum(a, axis=0)
     n1 = np.sum(a, axis=1)
-    E = np.zeros_like(a)
+    # print(n0)
+    # print(n1)
+    E = np.zeros_like(a, dtype=float)
     for i in range(r):
         for j in range(c):
             E[i, j] = n0[j] * n1[i] / n
-    
+    print(E)
     X_square = np.sum((a - E)**2 / E)
     df = (r-1)*(c-1) # degrees of freedom
     critical_value = stats.chi2(df).ppf(1-alpha)
@@ -50,3 +53,6 @@ def indepence_test(a, alpha=0.05):
 # 23.14
 # a = np.array([[160, 140, 40], [40, 60, 60]])
 # print(indepence_test(a))
+
+a = np.array([[1, 3, 24], [12, 28, 76], [12, 14, 30]])
+print(indepence_test(a))
