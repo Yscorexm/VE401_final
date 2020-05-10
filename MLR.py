@@ -117,4 +117,13 @@ def FMS_test(full, reduced, alpha=0.05):
 # model = MLR(len(x), 2, [x, x_square], y)
 # reduced_model = MLR(len(x), 1, [x], y)
 # print(model.TMS_test(0))
+
+
+
+x=[0.50, 1.00, 1.50, 2.00, 2.50]
+y=[-0.51 ,-2.09 ,-6.03 ,-9.28 ,-17.12]
+x_square = [k**2 for k in x]
+model = MLR(len(x), 2, [x, x_square], y)
+print(model.significance_test())
+reduced_model = MLR(len(x), 1, [x], y)
 print(FMS_test(model, reduced_model))

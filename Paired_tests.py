@@ -4,17 +4,22 @@ import math
 
 def paired_T_test(X, Y, H0, alpha=0.05):
     '''
-    Paired T-Test.  
+    Paired T-Test.
+    D=Y-X;
     H0: mean_D = or <= or >= 0.  
     In slides 502.  
     REQUIRE: H0 can take three values: "less", "greater", "equal". 
     RETURN: Test statistics, critical value, p-value.
     '''
+
+
     n = len(X)
     D = [X[i]-Y[i] for i in range(len(X))]
     mean_D = sum(D) / n
+    print('mean_D= ',mean_D)
     S_D = (sum([(k-mean_D)**2 for k in D]) / (n-1))**0.5
-    T = mean_D * n**0.5 / S_D
+    print('S_D= ',S_D)
+    T = mean_D * (n**0.5) / S_D
     if H0 == "less":
         c_value = stats.t(n-1).ppf(1-alpha)
         p_value = 1 - stats.t(n-1).cdf(T)
@@ -24,6 +29,8 @@ def paired_T_test(X, Y, H0, alpha=0.05):
     else:
         c_value = stats.t(n-1).ppf(1-alpha)
         p_value = 2 * min(1 - stats.t(n-1).cdf(T), stats.t(n-1).cdf(T))
+
+    print("T, c_value, p_value :  " , T, ' ',c_value,' ',p_value)
     return T, c_value, p_value
 
 
@@ -52,15 +59,18 @@ def CI_correlation(X, Y, alpha=0.05):
     Syy = sum([(k - Y_mean)**2 for k in Y])
     Sxy = sum([(X[i] - X_mean) * (Y[i] - Y_mean) for i in range(n)])
     R = Sxy / (Sxx * Syy)**0.5
+    print('R= ',R)
+    print('(1-alpha)% CI for ρ is ')
     z = stats.norm.ppf(1-alpha/2)
     lower = math.tanh(math.atanh(R) - z / (n-3)**0.5)
     upper = math.tanh(math.atanh(R) + z / (n-3)**0.5)
+
+    print('( ',lower,', ',upper,' ）')
     return lower, upper
 
 
 # 22.4
-X = [209, 178, 169, 212, 180, 192, 158, 180,
-     170, 153, 183, 165, 201, 179, 243, 144]
-Y = [196, 171, 170, 207, 177, 190, 159, 180,
-     164, 152, 179, 162, 199, 173, 231, 140]
-print(paired_T_test(X, Y, "less", 0.01))
+x=[75,46,57,43,58,38,61,56,64,65]
+y = [52, 41, 43, 47, 32, 49, 52, 44, 57, 60]
+paired_T_test(x,y, "equal", 0.05)
+

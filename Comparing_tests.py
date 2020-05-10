@@ -63,6 +63,7 @@ def F_test(s1, s2, n1, n2, H0, alpha=0.05):
         p_value = stats.f(n1-1, n2-1).cdf(F)
     elif H0 == "equal":
         F1, F2 = F, 1/F
+        print('when F>c_1 || 1/F > c_2 : reject')
         c_value1, c_value2 = stats.f(n1-1, n2-1).ppf(1-alpha/2), stats.f(n2-1, n1-1).ppf(1-alpha/2)
         F = (F1, F2)
         c_value = (c_value1, c_value2)
@@ -114,13 +115,15 @@ def mean2_test(mean1, mean2, s1, s2, n1, n2, delta=0, H0=None, variance="known",
         c_value = distribution.ppf(alpha)
         p_value = distribution.cdf(statistic)
     elif H0 == "equal":
-        c_value = distribution.ppf(1-alpha/2)
+        c_value = (distribution.ppf(alpha/2), distribution.ppf(1-alpha/2))
         p_value = 2 * min(1 - distribution.cdf(statistic), distribution.cdf(statistic))
     if not CI:
+        print("statistic, c_value, p_value")
         return statistic, c_value, p_value
     else:
+        print('CI of X1_mean- X2_mean')
         diff = distribution.ppf(1-alpha/2)*denominator
-        return nominator - diff, nominator + diff
+        return mean1-mean2 - diff, mean1-mean2 + diff
 
 
 
@@ -135,7 +138,7 @@ def mean2_test(mean1, mean2, s1, s2, n1, n2, delta=0, H0=None, variance="known",
 # 21.4
 # print(mean2_test(24.6, 22.1, 0.85, 0.98, 12, 15, variance="unknown_equal", sample_size="small", CI=True))
 # 21.6
-print(mean2_test(0.9375, 0.9173, 0.0389, 0.0402, 8, 8, delta=0, H0="less", variance="unknown_equal", sample_size="small"))
+print(mean2_test(121,112,8,8,10,10,delta=0,H0="less"))
 
 
 '''
