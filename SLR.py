@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import stats
-
+import matplotlib.pyplot as plot
 
 class SLR:
     '''
@@ -14,8 +14,15 @@ class SLR:
         self.y = y
         self.x_mean = sum(x) / n
         self.y_mean = sum(y) / n
+        self.sum_x=sum(x)
+        self.sum_y=sum(y)
         self.sum_x2 = sum([k**2 for k in x])
         self.sum_y2 = sum([k**2 for k in y])
+
+
+        self.sum_xy = sum(np.multiply(x,y))
+
+        
         self.Sxx = sum([(k - self.x_mean)**2 for k in x])
         self.Syy = sum([(k - self.y_mean)**2 for k in y])
         self.Sxy = sum([(x[i] - self.x_mean) * (y[i] - self.y_mean) for i in range(n)])
@@ -27,13 +34,37 @@ class SLR:
         self.R_square = self.SSR / self.SST
         self.parameters = (self.b0, self.b1)
         self.S = (self.SSE / (n-2))**0.5
-        self.e = [y[i] - self.predict(x[i]) for i in range(n)]
+        # self.e = [y[i] - self.predict(x[i]) for i in range(n)]
+
+
+    def regression(self):
+        print("The related parameters are:")
+        print("n=", self.n)
+        print("sum_x=", self.sum_x)
+        print("sum_y=", self.sum_y)
+        print("sum_x2=", self.sum_x2)
+        print("sum_y2=", self.sum_y2)
+        print("sum_xy=", self.sum_xy)
+        print("===============================")
+        print("Sxx=",self.Sxx)
+        print("Syy=",self.Syy)
+        print("Sxy=",self.Sxy)
+        print("===============================")
+        print("(b0,b1)=",self.parameters)
 
     def predict(self, x_0):
         '''
         RETURN: Estimated Mean at x = x_0.
         '''
-        return self.b1 * x_0 + self.b0
+        prediction=self.b0+self.b1*x_0
+        return prediction
+
+    def unmute_predict(self,x_0):
+        print("parameters (b0,b1)=", self.parameters)
+        prediction = self.predict(x_0)
+        print("prediction at x0=", x_0, "= b0+b1*x0=", prediction)
+        return prediction
+
 
     def CI_parameters(self, alpha=0.05):
         '''
@@ -42,10 +73,18 @@ class SLR:
         RETURN: CI tuple, first for β0 and second for β1.
         '''
         t = stats.t(self.n - 2).ppf(1-alpha/2)
+        print("t(alpha/2,n-2)=",t)
         diff_1 = t * self.S / self.Sxx**0.5
+
         diff_0 = t * self.S * (self.sum_x2 / (self.n * self.Sxx))**0.5
+        print("diff(beta_0)=",diff_0)
+
+        print("diff(beta_1)=", diff_1)
         CI_beta0 = (self.b0 - diff_0, self.b0 + diff_0)
         CI_beta1 = (self.b1 - diff_1, self.b1 + diff_1)
+        print("The CI for beta0 and beta1:")
+        print("beta0=b0±t(alpha/2, n-2)*S*sqrt(sum_x2)/sqrt(n*Sxx)=", CI_beta0)
+        print("beta1=b1±t(alpha/2, n-2)*S*sqrt(sum_x2)/sqrt(n*Sxx)=", CI_beta1)
         return CI_beta0, CI_beta1
 
     def significance_test(self, alpha=0.05):
@@ -57,6 +96,12 @@ class SLR:
         '''
         t = stats.t(self.n - 2).ppf(1-alpha/2)
         T = self.b1 * self.Sxx**0.5 / self.S
+        print("This is the significance test. H0: beta_1=0")
+        print("T=",T,"      t=",t)
+        if abs(T)>t:
+            print("Reject!=> β1 ≠ 0")
+        else:
+            print("Cannot reject!")
         return T, t
 
     def CI(self, x_0, alpha=0.05):
@@ -67,9 +112,14 @@ class SLR:
         RETURN: CI.  
         IMPORTANT: to be tested.
         '''
+        print("This is confidence interval with alpha=",alpha)
         t = stats.t(self.n - 2).ppf(1-alpha/2)
         mean = self.predict(x_0)
+        print("mean=",mean)
         diff = t * self.S * (1/self.n + (x_0 - self.x_mean)**2/self.Sxx)**0.5
+        print("diff=",diff)
+        CI=(mean-diff, mean+diff)
+        print("CI=",CI)
         return mean-diff, mean+diff
     
     def PI(self, x_0, alpha=0.05):
@@ -80,9 +130,15 @@ class SLR:
         RETURN: PI.
         IMPORTANT: to be tested.
         '''
+
+        print("This is prediction interval with alpha=",alpha)
         t = stats.t(self.n - 2).ppf(1-alpha/2)
         mean = self.predict(x_0)
+        print("mean=", mean)
         diff = t * self.S * (1 + 1/self.n + (x_0 - self.x_mean)**2/self.Sxx)**0.5
+        print("diff=", diff)
+        PI=(mean-diff, mean+diff)
+        print("PI=", PI)
         return mean-diff, mean+diff
     
     def correlation_test(self, alpha=0.05):
@@ -93,9 +149,29 @@ class SLR:
         RETURN: Test statistics and critical value.  
         IMPORTANT: to be tested.
         '''
+        print("This is the test for correlation. H0: ϱ = 0")
+        print("R2=",self.R_square,"      R=",self.R_square**0.5)
         t = stats.t(self.n - 2).ppf(1-alpha/2)
-        T = (self.R_square * (self.n - 2) / (1 - self.R_square))**0.5
+        T = ((self.R_square) * (self.n - 2) / (1 - self.R_square))**0.5
+
+        print("T=",T, "         t=",t)
+
+        if abs(T)>t:
+            print("Reject!=> ϱ ≠ 0")
+        else:
+            print("Cannot reject!")
+
         return T, t
+
+    def residue_plot(self):
+        e = [self.y[i] - self.predict(self.x[i]) for i in range(self.n)]
+        print("This is the residual plot. The residuals are:")
+        print(e)
+
+        fig=plot.figure(num=1, figsize=(15, 8),dpi=80)
+        plot.scatter(self.x,e)
+        plot.show()
+
     
 
 def LoF_test(N, X, Y, alpha=0.05):
@@ -108,8 +184,14 @@ def LoF_test(N, X, Y, alpha=0.05):
     '''
     k = len(N)
     n = sum(N)
+    print("This is lack of fit test. H0: model is appropriate.")
+    print("k=",k)
+    print("n=",n)
+
     mean_Y = [sum(Y[i])/N[i] for i in range(k)]
     SSE_pe = sum(sum([(Y[i][j] - mean_Y[i])**2 for j in range(N[i])]) for i in range(k))
+
+    print("SSE_pe=",SSE_pe)
     x = []
     for i in range(k):
         x.extend([X[i]] * N[i])
@@ -118,9 +200,19 @@ def LoF_test(N, X, Y, alpha=0.05):
         y.extend(Y[i])
     model = SLR(n, x, y)
     SSE = model.SSE
-    SSE_if = SSE - SSE_pe
-    F = (SSE_if / (k - 2)) / (SSE_pe / (n - k))
+    SSE_lf = SSE - SSE_pe
+    print("SSE=", SSE)
+    print("SSE_lf=SSE-SSE_pe=", SSE_lf)
+    F = (SSE_lf / (k - 2)) / (SSE_pe / (n - k))
     f = stats.f(k - 2, n - k).ppf(1-alpha)
+    print("F=(SSE_lf / (k - 2)) / (SSE_pe / (n - k))=", F)
+
+    print("f(k-2,n-k,alpha)=", f)
+
+    if F > f:
+        print("Reject!=> model is *not* appropriate")
+    else:
+        print("Cannot reject!=> maybe appropriate")
     return F, f
 
 
@@ -136,19 +228,37 @@ def LoF_test(N, X, Y, alpha=0.05):
 #      8.2, 12.2, 11.9, 9.6, 10.9, 9.6, 10.1, 8.1, 6.8, 8.9,
 #      7.7, 8.5, 8.9, 10.4, 11.1]
 # model = SLR(len(x), x, y)
-# print(model.parameters)
+# model.regression()  #24.1
+# model.CI_parameters()  #24.5
+# # # model.predict(5)
+# model.significance_test() #24.7
+# model.residue_plot()
+# model.significance_test()
+# model.correlation_test()
 # print(model.CI_parameters())
 # print(model.significance_test())
 
 # 25.4
-N = [3, 3, 3, 3, 3]
-X = [30, 40, 50, 60, 70]
-Y = [[13.7, 14.0, 14.6], [15.5, 16.0, 17.0], [18.5, 20.0, 21.1], [17.7, 18.1, 18.5], [15.0, 15.6, 16.5]]
-print(LoF_test(N, X, Y))
+# N = [2,2,3,3,2,2]
+# X = [1.0,3.3,4.0,5.6,6.0,6.5]
+# Y = [[1.6,1.8], [1.8,2.7], [2.6,2.6,2.2], [3.5,2.8,2.1], [3.4,3.2],[3.4,3.9]]
+# print(LoF_test(N, X, Y))
 
+# X = [100,120,140,160,180]
+# Y= [45,54,66,74,85]
+#
+#
+# model=SLR(len(X),X,Y)
+# model.regression()
+# model.CI_parameters()
+# model.CI(130)
+# model.PI(130)
+# model.residue_plot()
 '''
 to do: 
-slides 595, plot for CI and PI
-slides 601, Test for Correlation
+slides 595, plot for CI and PI 不用做吧
+slides 601, Test for Correlation 做好了
 slides 614, residual plot
+
+如果有1个x对多个y的情况只需输入各对(x,y)即可
 '''

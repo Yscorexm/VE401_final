@@ -51,12 +51,12 @@ def wrs_test(x, y, H0, alpha=0.05):
         rank = (2*i - cnt + 3)/2
         for _ in range(cnt):
             rank_list.append(rank)
-    # print([(data[i][1], data[i][0], rank_list[i]) for i in range(n)])
+    print([(data[i][1], data[i][0], rank_list[i]) for i in range(n)])
     w_x = sum([rank_list[i] for i in range(n) if data[i][1] == 1])
     n -= m
     E_w_x = m*(m+n+1)/2
     if sum_of_ties > 12:
-        print("Varning: sum of ties = ", sum_of_ties, ", which is > 12.")
+        print("Varning: sum of ties = ", sum_of_ties, ", which is > 12. So Var (Wx)= m*n*(m+n+1)/12")
         Var_w_x = m*n*(m+n+1)/12
     else:
         print("sum of ties = ", sum_of_ties)
